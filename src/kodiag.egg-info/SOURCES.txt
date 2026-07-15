@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+setup.cfg
+src/kodiag/__init__.py
+src/kodiag/decorators.py
+src/kodiag.egg-info/PKG-INFO
+src/kodiag.egg-info/SOURCES.txt
+src/kodiag.egg-info/dependency_links.txt
+src/kodiag.egg-info/top_level.txt
+tests/test_decorators.py
