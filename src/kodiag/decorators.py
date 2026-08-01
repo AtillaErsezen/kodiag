@@ -12,17 +12,16 @@ _call_data = {}  # normalized file_name -> list of call dicts
 
 def export_markdown(filename: str, calls: list):
     """
-    Generates a Markdown trace log table from a list of call results,
-    and saves it as a .md file in the 'kodiag_output' directory.
-
-    Args:
-        filename (str): The desired name for the output markdown file (e.g., "trace_report").
-        calls (list): List of dictionaries containing function call data.
-                       Each dict must contain 'name', 'args', 'kwargs',
-                       'result', 'error', and 'elapsed'.
-
+    Create a Markdown trace table and save it under the ``kodiag_output`` directory.
+    
+    Parameters:
+        filename (str): Output name, optionally ending in ``.html``.
+        calls (list): Call records containing function names, arguments, results,
+            errors, and elapsed times.
+    
     Returns:
-        The output directory path on success, or None on failure.
+        str: Path to the output directory when the file is written successfully.
+        None: If a call record is missing required data or file output fails.
     """
 
     # --- Markdown Header Setup ---
@@ -83,6 +82,15 @@ def export_markdown(filename: str, calls: list):
         return None
 
 def _safe_serialize(val):
+    """
+    Convert a value into a JSON-compatible representation.
+    
+    Parameters:
+    	val: The value to serialize.
+    
+    Returns:
+    	The original JSON-compatible value, a recursively serialized sequence or dictionary, or a string representation for unsupported values.
+    """
     if isinstance(val, _JSON_PRIMITIVES):
         return val
     if isinstance(val, (tuple, list)):
@@ -93,9 +101,18 @@ def _safe_serialize(val):
 
 #TODO remove indexes from md output table? can be driven from flow output
 def _has_error(call):
+    """Determine whether a traced call represents an error.
+    
+    Parameters:
+        call (dict or None): The recorded call data to inspect.
+    
+    Returns:
+        bool: `true` if the call is missing or contains an error, `false` otherwise.
+    """
     return call is None or call["error"] is not None
 
 def _card_html(call):
+    """Generate an HTML card containing a traced call's name, arguments, result, error, and elapsed time."""
     color = "red" if _has_error(call) else "gray"
     name = html.escape(str(call["name"]))
     args = html.escape(str(call["args"]))
@@ -116,6 +133,11 @@ def _card_html(call):
 
 _closed = False
 def _close_all(): #idempotency as a safety net
+    """
+    Finalize all recorded traces by writing their Markdown and HTML output files.
+    
+    The operation runs at most once and reports file-export failures without raising them.
+    """
     global _closed
     if _closed:
         return
@@ -145,6 +167,19 @@ def _close_all(): #idempotency as a safety net
 atexit.register(_close_all)
 
 def trace(file_name=None, precision=3):
+    """
+    Decorate a function to trace its calls to a file or the console.
+    
+    Parameters:
+        file_name (str | None): Output filename for recorded call data; when omitted, trace information is printed.
+        precision (int): Number of decimal places used for elapsed-time values.
+    
+    Returns:
+        A decorator that records or prints function calls, results, elapsed times, and errors.
+    
+    Raises:
+        Exception: Re-raises any exception raised by the decorated function.
+    """
     def decorator(func):
         fn_name = func.__name__
         if file_name:

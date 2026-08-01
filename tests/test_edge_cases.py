@@ -106,6 +106,15 @@ def test_has_error_without_error():
 def test_print_mode_returns_value_and_logs(capsys, clean):
     @trace()
     def add(a, b):
+        """Return the sum of two values.
+        
+        Parameters:
+        	a: The first value.
+        	b: The second value.
+        
+        Returns:
+        	The sum of `a` and `b`.
+        """
         return a + b
 
     assert add(2, 3) == 5
@@ -133,6 +142,15 @@ def test_print_mode_bare_trace_without_parens_is_broken():
     # deliberately-unfixed case from test_decorators.py.
     @trace
     def add(a, b):
+        """Return the sum of two values.
+        
+        Parameters:
+        	a: The first value.
+        	b: The second value.
+        
+        Returns:
+        	The sum of `a` and `b`.
+        """
         return a + b
 
     with pytest.raises(TypeError):
@@ -146,6 +164,17 @@ def test_print_mode_bare_trace_without_parens_is_broken():
 def test_file_mode_records_all_fields(clean):
     @trace("rec.html")
     def add(a, b, label="x"):
+        """
+        Add two values.
+        
+        Parameters:
+            a: First value.
+            b: Second value.
+            label: Label accepted without affecting the result.
+        
+        Returns:
+            The sum of a and b.
+        """
         return a + b
 
     assert add(2, 3, label="sum") == 5
@@ -188,6 +217,12 @@ def test_file_mode_explicit_html_not_doubled(clean):
 def test_file_mode_reraises_and_records_error(clean):
     @trace("err.html")
     def boom(x):
+        """
+        Raise a KeyError indicating that the requested value is missing.
+        
+        Raises:
+            KeyError: Always, with the message "missing".
+        """
         raise KeyError("missing")
 
     with pytest.raises(KeyError):
@@ -242,6 +277,15 @@ def test_file_mode_serializes_unserializable_args(clean):
 # --------------------------------------------------------------------------- #
 
 def _md_call(**over):
+    """
+    Build a call record for Markdown export tests, applying any supplied field overrides.
+    
+    Parameters:
+    	over: Field values that replace the default call record values.
+    
+    Returns:
+    	dict: A call record containing the function name, arguments, result, error, and elapsed time.
+    """
     base = {"name": "f", "args": [], "kwargs": {}, "result": None,
             "error": None, "elapsed": 0.0}
     base.update(over)
