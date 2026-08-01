@@ -16,11 +16,16 @@ kodiag exposes a single decorator, `trace`, imported directly from the package:
 from kodiag import trace
 ```
 
-`trace` must always be called with parentheses before decorating a function — `@trace()`, not bare `@trace` — since it takes an optional `fileName` argument that controls whether calls are logged to the console or recorded into an HTML diagram.
+`trace` must always be called with parentheses before decorating a function — `@trace()`, not bare `@trace` — since it takes two optional arguments:
+
+- `file_name` (default `None`): controls whether calls are logged to the console or recorded into a diagram/table on disk.
+- `precision` (default `3`): number of decimal places elapsed time is rounded to.
+
+Both tracing modes catch exceptions raised by the wrapped function instead of letting them propagate: the exception is recorded/printed, and `trace` returns `None` for that call. If your caller needs to see the exception itself, don't rely on `trace` to re-raise it.
 
 ### Console tracing — `@trace()`
 
-Called with no arguments, `trace` prints each call to stdout as it happens, along with the return value and elapsed time. Nothing is written to disk.
+Called with no `file_name`, `trace` prints each call to stdout as it happens, along with the return value (or raised exception) and elapsed time. Nothing is written to disk.
 
 ```python
 from kodiag import trace
@@ -34,41 +39,48 @@ add(1, 2)
 
 ```
 • calling add((1, 2), {}) •
->>> add returned 3 and took 0.0000s <<<
+>>> add returned 3 and took 0.000s <<<
 ```
 
-### Diagram tracing — `@trace("fileName")`
+### File tracing — `@trace("file_name")`
 
-Pass a file name to record every call into an in-memory flow that is written out as an HTML diagram when the program exits (via `atexit`). The `.html` extension is added automatically if omitted.
+Pass a file name to record every call into an in-memory flow that is written to disk when the program exits normally (via `atexit`). The `.html` suffix is added to the key automatically if omitted, then stripped back off to name the output folder.
 
 ```python
 from kodiag import trace
 
-@trace("trace_output")
+@trace("orders")
 def fetch(user_id):
     ...
 
-@trace("trace_output")
+@trace("orders")
 def process(data):
     ...
 
 fetch(42)
 process({"a": 1})
-# trace_output.html is written on interpreter exit
+# written on interpreter exit:
+#   kodiag_output/orders/orders.html
+#   kodiag_output/orders/orders.md
 ```
 
-Every function decorated with the same `fileName` appends to that file's flow in call order, so you can trace a whole call chain — across multiple functions — into one diagram.
+Every function decorated with the same `file_name` appends to that file's flow in call order, so you can trace a whole call chain — across multiple functions — into one report. Output only appears once the process exits normally; a killed process won't flush it.
 
 Each recorded call captures:
 - function name
 - positional args and keyword args
-- the return value
-- elapsed time (seconds)
+- the return value (`null`/`None` if the call raised)
+- the error, if the call raised (`null` otherwise) — result and error are independent fields, not mutually exclusive, so a call can carry a partial result *and* an error if the function captured a value before raising
+- elapsed time in seconds, rounded to `precision` decimal places
 
-Arguments and return values are serialized for the diagram as follows: JSON-safe primitives (`str`, `int`, `float`, `bool`, `None`) pass through as-is, `tuple`/`list`/`dict` are serialized recursively, and anything else falls back to `repr()`.
+Arguments and return values are serialized as follows: JSON-safe primitives (`str`, `int`, `float`, `bool`, `None`) pass through as-is, `tuple`/`list`/`dict` are serialized recursively, and anything else falls back to `repr()`.
 
-The generated HTML page renders each call as a card connected by arrows in call order, with an export bar at the bottom offering:
-- **Copy Mermaid** — copies a `flowchart LR` diagram to the clipboard
-- **Download Draw.io** — downloads a `.drawio` XML file of the flow
-- **Copy Markdown** — copies a Markdown table plus a flow summary
-- **Print / Save PDF** — opens the browser print dialog (the export bar is hidden in print output)
+Two files are written per `file_name`, both under `kodiag_output/<file_name>/`:
+
+- **`<file_name>.md`** — a Markdown table (`# | Function | Args | Kwargs | Result | Error | Elapsed`) plus a **Flow** line (call names joined by `→`, with a raised call suffixed `*`). This is the cheapest way to inspect a trace programmatically or paste it somewhere.
+- **`<file_name>.html`** — the same data rendered as a chain of cards connected by arrows, colored red where a call raised. A fixed bottom bar offers:
+  - **Copy Mermaid** — copies a `flowchart LR` diagram to the clipboard
+  - **Download Draw.io** — downloads a `.drawio` XML file of the flow
+  - **Print / Save PDF** — opens the browser print dialog (the export bar is hidden in print output)
+
+Re-running with the same `file_name` overwrites the previous output — there's no history across runs.

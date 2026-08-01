@@ -1,1 +1,6 @@
 dist
+.env
+__pycache__/
+*.pyc
+*.egg-info/
+kodiag_output/
