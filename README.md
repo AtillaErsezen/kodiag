@@ -8,6 +8,18 @@ Python debugging library consisting of decorator trace functions to write code f
 pip install kodiag
 ```
 
+### Claude Code plugin
+
+kodiag also ships a Claude Code plugin — a `kodiag` Skill that teaches Claude
+how to add `@trace(...)`, run your program, and read the generated trace back
+to debug runtime behavior. It's a separate install from the `pip` package
+above; the plugin uses the package, it doesn't replace it.
+
+```
+/plugin marketplace add AtillaErsezen/kodiag
+/plugin install kodiag@kodiag
+```
+
 ## Usage
 
 kodiag exposes a single decorator, `trace`, imported directly from the package:
@@ -21,7 +33,7 @@ from kodiag import trace
 - `file_name` (default `None`): controls whether calls are logged to the console or recorded into a diagram/table on disk.
 - `precision` (default `3`): number of decimal places elapsed time is rounded to.
 
-Both tracing modes catch exceptions raised by the wrapped function instead of letting them propagate: the exception is recorded/printed, and `trace` returns `None` for that call. If your caller needs to see the exception itself, don't rely on `trace` to re-raise it.
+Both tracing modes record/print the exception if the wrapped function raises, then **re-raise** it — the decorated function's own error behavior is unchanged, and the exception is still visible to your caller.
 
 ### Console tracing — `@trace()`
 

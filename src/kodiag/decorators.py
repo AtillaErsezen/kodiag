@@ -232,19 +232,3 @@ def trace(file_name=None, precision=3):
 
         return wrapper
     return decorator
-
-@trace("test.html")
-def e():
-    raise ValueError("error spotted")
-@trace("test.html")
-def b():
-  return None
-
-@trace("test.html")
-def c():
-  return "test"
-
-if __name__ == "__main__":
-    e()
-    b()
-    c()
