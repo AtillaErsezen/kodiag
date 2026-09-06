@@ -1,6 +1,8 @@
 dist
 .env
-kodiag_output/test/test.html
-kodiag_output/test/test.md
 src/kodiag/__pycache__/constants.cpython-313.pyc
 tests/__pycache__/test_edge_cases.cpython-313-pytest-8.4.2.pyc
+__pycache__/
+*.pyc
+*.egg-info/
+kodiag_output/
