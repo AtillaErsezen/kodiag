@@ -16,7 +16,7 @@ to debug runtime behavior. It's a separate install from the `pip` package
 above; the plugin uses the package, it doesn't replace it.
 
 ```
-/plugin marketplace add AtillaErsezen/kodiag
+/plugin marketplace add https://github.com/AtillaErsezen/kodiag.git
 /plugin install kodiag@kodiag
 ```
 
