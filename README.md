@@ -42,19 +42,26 @@ Both tracing modes record/print the exception if the wrapped function raises, th
 Called with no `file_name`, `trace` prints each call to stdout as it happens, along with the return value (or raised exception) and elapsed time. Nothing is written to disk.
 
 ```python
+import hashlib
+import os
+
 from kodiag import trace
 
 @trace()
-def add(a, b):
-    return a + b
+def hash_password(password: str, *, iterations: int = 600_000) -> str:
+    salt = os.urandom(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, iterations)
+    return f"pbkdf2_sha256${iterations}${salt.hex()}${digest.hex()}"
 
-add(1, 2)
+hash_password("correct horse battery staple")
 ```
 
 ```
-• calling add((1, 2), {}) •
->>> add returned 3 and took 0.000s <<<
+• calling hash_password(('correct horse battery staple',), {}) •
+>>> hash_password returned 'pbkdf2_sha256$600000$9f3c…$a17b…' and took 0.184s <<<
 ```
+
+The deliberate work factor in `pbkdf2_hmac` is exactly the kind of cost you want `trace` to surface — the elapsed line tells you what that iteration count actually buys you on this machine.
 
 ### File tracing — `@trace("file_name")`
 
