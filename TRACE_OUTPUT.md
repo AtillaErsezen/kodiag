@@ -1,6 +1,6 @@
-# kodiag Trace Log Retrieval — Agent Notes
+# kodiag Trace Log — Format & Retrieval
 
-kodiag has no separate search agent. The main coding LLM reads trace output directly off disk when it needs to inspect a program's call flow (arguments, return values, errors, timing). This file documents everything needed to find and interpret that output.
+The main coding LLM reads trace output directly off disk when it needs to inspect a program's call flow (arguments, return values, errors, timing). This file documents everything needed to find and interpret that output.
 
 ## What produces output
 
@@ -44,17 +44,18 @@ Fixed table schema, one row per recorded call, in call order:
 
 | # | Function | Args | Kwargs | Result | Error | Elapsed |
 |---|----------|------|--------|--------|-------|---------|
-| 1 | `fetch` | `[42]` | `{}` | `{"id": 42}` | `null` | `0.012s` |
-| 2 | `process` | `[{"id": 42}]` | `{}` | `null` | `"KeyError: 'name'"` | `0.001s` |
+| `1` | `fetch` | `[42]` | `{}` | `{"id": 42}` | `null` | `0.012s` |
+| `2` | `process` | `[{"id": 42}]` | `{}` | `null` | `"missing 'name'"` | `0.001s` |
 
 **Flow:** `fetch` → `process*`
 ```
 
 - `#`: 1-indexed call order within this file_name.
+- Every cell in a data row is wrapped in backticks (the header/separator rows are not). Any literal `|` in a value is backslash-escaped so it can't break the columns.
 - `Function`: the decorated function's `__name__`.
 - `Args` / `Kwargs`: JSON-serialized positional/keyword arguments as received by the call.
 - `Result`: JSON-serialized return value. `null` if the call raised (see below) or if it returned `None`.
-- `Error`: JSON-serialized `str(exception)` if the call raised, else `null`.
+- `Error`: JSON-serialized `str(exception)` if the call raised, else `null`. This is only the exception's message — the exception type name is **not** included (e.g. `KeyError('name')` is recorded as `"'name'"`, not `"KeyError: 'name'"`).
 - `Elapsed`: seconds, rounded to `precision` decimal places, suffixed `s`.
 - **Flow** line: space-arrow-joined function names in call order; a call that raised is suffixed with `*` (e.g. `` `process*` ``).
 
@@ -64,11 +65,13 @@ When scanning this file for a main agent's benefit: always report the full **Flo
 
 ## HTML output spec (`kodiag_output/<name>/<name>.html`)
 
-Same call data, rendered as a horizontal chain of cards (one per call, connected by arrows) for human viewing in a browser. Cards with a non-null error are outlined/colored red. A fixed bottom bar offers:
+Same call data, rendered as a horizontal chain of cards (one per call, connected by arrows) for human viewing in a browser. On a card for a call that raised, the `→ error:` line is colored red; the card border itself is unchanged. A fixed bottom bar offers:
 
-- **Copy Mermaid** — copies a `flowchart LR` version of the flow to the clipboard.
-- **Download Draw.io** — downloads a `.drawio` XML file of the flow.
+- **Copy Mermaid** — copies a `flowchart LR` version of the flow to the clipboard (error nodes get `style nN color:red`).
+- **Download Draw.io** — downloads the flow as an XML file, always named `trace.drawio` regardless of `file_name` (error nodes get `fontColor=red; stroke=#cc3`).
 - **Print / Save PDF** — opens the browser print dialog (the export bar itself is hidden in print/PDF output).
+
+The Mermaid and Draw.io labels show the same `elapsed` value as the `.md` table — already rounded to `precision` when the trace was recorded.
 
 There is no Markdown-copy button in the HTML — Markdown is only available as the separate `.md` file described above, not as a UI export from the diagram page.
 
