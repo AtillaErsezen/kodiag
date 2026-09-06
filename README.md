@@ -1,3 +1,5 @@
+![kodiag](https://raw.githubusercontent.com/AtillaErsezen/kodiag/main/kodiag_logo.png)
+
 Python debugging library consisting of decorator trace functions to write code flow in diagram. Supports exporting to Pdf, Markdown, Drawio, Mermaid. It records function calls with arguments, return values, and elapsed time, then generates an HTML page with interactive buttons for exporting the trace. You can use it for your python projects by installing with `pip install kodiag`. 
 
 ![kodiag](https://raw.githubusercontent.com/AtillaErsezen/kodiag/main/image.png)
