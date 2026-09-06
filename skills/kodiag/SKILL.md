@@ -85,6 +85,11 @@ Fixed schema, one row per recorded call in call order:
 
 Values that aren't JSON-serializable are recorded as their `repr(...)`.
 
+> **Security and privacy:** Captured `Args`, `Kwargs`, `Result`, `Error`, and
+> `repr(...)` output may contain credentials, tokens, or personal data. Avoid
+> tracing sensitive code, and secure or delete `kodiag_output/` after reviewing
+> generated traces.
+
 ## What to surface
 
 Don't dump the whole table. Report:
