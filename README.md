@@ -98,3 +98,7 @@ Two files are written per `file_name`, both under `kodiag_output/<file_name>/`:
   - **Print / Save PDF** — opens the browser print dialog (the export bar is hidden in print output)
 
 Re-running with the same `file_name` overwrites the previous output — there's no history across runs.
+
+## License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
