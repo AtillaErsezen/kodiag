@@ -21,7 +21,7 @@ function exportMermaid() {
       + "<br>args: " + JSON.stringify(c.args)
       + "<br>\\u2192 " + JSON.stringify(c.result)
       + "<br>\\u2192 " + JSON.stringify(c.error)
-      + "<br>" + c.elapsed.toFixed(4) + "s";
+      + "<br>" + c.elapsed + "s";
       lines.push("  n" + i + '["' + label.replace(/"/g, "'") + '"]');
       if (c.error) styleLines.push("  style n" + i + " color:red");
       if (i < CALLS.length - 1) lines.push("  n" + i + " --> n" + (i + 1));
@@ -55,7 +55,7 @@ function exportDrawio() {
       + "<br>kwargs: " + JSON.stringify(c.kwargs)
       + "<br>→ " + JSON.stringify(c.result)
       + "<br>error: " + JSON.stringify(c.error)
-      + "<br>" + c.elapsed.toFixed(4) + "s"
+      + "<br>" + c.elapsed + "s"
     );
     cells.push(
       '<mxCell id="' + (i + 2) + '" value="' + label + '"'
