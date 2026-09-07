@@ -1,7 +1,7 @@
 {
   "name": "kodiag",
   "description": "Trace Python runtime call flow, arguments, return values, errors, and timing via a decorator, then read the generated trace to debug what actually happened.",
-  "version": "0.1.5",
+  "version": "1.0.1",
   "author": { "name": "AtillaErsezen" },
   "keywords": ["python", "debugging", "tracing", "runtime"],
   "homepage": "https://github.com/AtillaErsezen/kodiag",
